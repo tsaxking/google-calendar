@@ -26,7 +26,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.openAllInFolder = exports.openAllInFolderSync = exports.fileStream = exports.formatBytes = exports.deleteUpload = exports.getUpload = exports.uploadMultipleFiles = exports.saveUpload = exports.saveTemplate = exports.saveTemplateSync = exports.getTemplate = exports.getTemplateSync = exports.saveJSON = exports.saveJSONSync = exports.getJSON = exports.getJSONSync = void 0;
+exports.log = exports.LogType = exports.openAllInFolder = exports.openAllInFolderSync = exports.fileStream = exports.formatBytes = exports.deleteUpload = exports.getUpload = exports.uploadMultipleFiles = exports.saveUpload = exports.saveTemplate = exports.saveTemplateSync = exports.getTemplate = exports.getTemplateSync = exports.saveJSON = exports.saveJSONSync = exports.getJSON = exports.getJSONSync = void 0;
 const fs = __importStar(require("fs"));
 const path = __importStar(require("path"));
 const uuid_1 = require("uuid");
@@ -34,6 +34,7 @@ const pseudo_build_1 = require("../build/pseudo-build");
 const node_html_parser_1 = require("node-html-parser");
 const v3_1 = require("node-html-constructor/versions/v3");
 const callsite_1 = __importDefault(require("callsite"));
+const objects_to_csv_1 = __importDefault(require("objects-to-csv"));
 // console.log(build);
 /**
  * Description placeholder
@@ -690,3 +691,12 @@ function openAllInFolder(dir, cb, options = {}) {
     });
 }
 exports.openAllInFolder = openAllInFolder;
+var LogType;
+(function (LogType) {
+    LogType["REQUEST"] = "request";
+    LogType["ERROR"] = "error";
+})(LogType = exports.LogType || (exports.LogType = {}));
+function log(type, dataObj) {
+    new objects_to_csv_1.default([dataObj]).toDisk(path.resolve(__dirname, `../logs/${type}.csv`), { append: true });
+}
+exports.log = log;

@@ -6,6 +6,8 @@ import { build } from '../build/pseudo-build';
 import { HTMLElement, parse } from 'node-html-parser';
 import { render } from 'node-html-constructor/versions/v3';
 import callsite from 'callsite';
+import ObjectsToCsv from 'objects-to-csv';
+
 // console.log(build);
 
 /**
@@ -780,4 +782,24 @@ export function openAllInFolder(dir: string, cb: FileCb, options: FileOpts = {})
             });
         });
     });
+}
+
+
+
+
+export enum LogType {
+    REQUEST = 'request',
+    ERROR = 'error',
+    DEBUGGER = 'debugger'
+}
+
+export type LogObj = {
+    [key: string]: string|number|boolean|undefined|null;
+}
+
+export async function log(type: LogType, dataObj: LogObj) {
+    return new ObjectsToCsv([dataObj]).toDisk(
+        path.resolve(__dirname, `../logs/${type}.csv`), 
+        { append: true }
+    );
 }

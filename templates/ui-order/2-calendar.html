@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <title>View Events</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <main>
+        <div class="container" id="calendar" data-view="month" data-alias="{alias}">
+        </div>
+
+        <button class="btn btn-primary" id="confirm">Use this calendar</button>
+    </main>
+    <script src="script.js"></script>
+
+    <script>
+        // get id from parameters of url
+        const urlParams = new URLSearchParams(window.location.search);
+        const calendarId = urlParams.get('calendarId');
+        const container = document.querySelector('#calendar');
+        const calendar = new Calendar(container);
+
+        document.querySelector('confirm').onclick = async() => {
+await CBS.alert(`Here is your embed:\n
+<iframe src="https://calendar.tsaxking.com/embed/${container.dataset.alias}" width="100%" height="600px" frameborder="0"></iframe>
+`);
+        }
+    </script>
+</body>
+
+</html>

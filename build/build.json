@@ -49,15 +49,19 @@
                 "https://cdnjs.cloudflare.com/ajax/libs/bootstrap-colorpicker/3.2.0/js/bootstrap-colorpicker.min.js --ignore-build",
 
                 // ts folders (have their own tsconfig.json)
-                "[ts]../static/js/submodules/canvas",
-                "[ts]../static/js/submodules/color",
-                "[ts]../static/js/submodules/custom-bootstrap/src",
+                // "[ts]../static/js/submodules/canvas",
+                // "[ts]../static/js/submodules/color",
+                // "[ts]../static/js/submodules/custom-bootstrap/src",
+                "../static/js/submodules/colors/index.js",
+                "../static/js/submodules/custom-bootstrap/src/index.js",
 
                 // all js files in these folders (no ts)
                 "../static/js/top",
-                "../static/js/bottom"
+                "../static/js/bottom",
 
                 // specific files
+
+                "../static/js/classes/index.js"
             ]
         }
     },

@@ -10,15 +10,38 @@
 </head>
 
 <body>
-    <header>
-      
-    </header>
     <main>
+        Hello! Please input your calendar id:
+        <input type="text" name="CalendarId" id="cal-id">
+        <input type="text" name="email" id="cal-email">
 
+        <li id="cal-list"></li>
+
+        <button id="submit">Submit</button>
+
+        <script>
+            const button = document.getElementById('submit');
+            const input = document.getElementById('cal-id');
+
+            button.addEventListener('click', async() => {
+                const calId = input.value;
+                const data = await requestFromServer({
+                    url: '/calendars',
+                    body: {
+                        id: calId,
+                        email: document.getElementById('cal-email').value
+                    }
+                });
+
+                for (const cal of data) {
+                    if (!cal.summary) continue;
+                    const li = document.createElement('li');
+                    li.innerText = cal.summary;
+                    document.getElementById('cal-list').appendChild(li);
+                }
+            });
+        </script>
     </main>
-    <footer>
-
-    </footer>
     <script src="script.js"></script>
 </body>
 

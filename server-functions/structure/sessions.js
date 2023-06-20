@@ -31,10 +31,14 @@ const path = __importStar(require("path"));
 const cookie_1 = require("./cookie");
 class Session {
     static middleware(req, res, next) {
-        if (!req.session) {
-            req.session = new Session(req, res);
-            Session.addSession(req.session);
+        const cookie = (0, cookie_1.parseCookie)(req.headers.cookie || '');
+        const { ssid } = cookie || {};
+        let session = Session.sessions[ssid];
+        if (!session) {
+            session = new Session(req, res);
+            Session.addSession(session);
         }
+        req.session = session;
         next();
     }
     static _sessions = {};

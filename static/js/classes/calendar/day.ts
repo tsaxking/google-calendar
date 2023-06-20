@@ -28,10 +28,10 @@ class CalendarDay extends CalendarElement {
 
     private renderWeek() {
         this.el = document.createElement('div');
-        this.el.classList.add('position-absolute', 'h-100', 'overflow-hidden');
+        // this.el.classList.add('position-absolute', 'h-100', 'overflow-hidden');
 
         const container = document.createElement('div');
-        container.classList.add('position-relative', 'overflow-hidden');
+        container.classList.add('position-absolute', 'overflow-hidden');
         container.style.height = 60 * 24 + 'px'; // 60 minutes * 24 hours
         
         const date = new Date(this.date);
@@ -47,7 +47,7 @@ class CalendarDay extends CalendarElement {
 
 
             // start - date / minutes + 60px (offset for header)
-            cardContainer.style.top = `${(event.start.getTime() - date.getTime()) / (1000 * 60)}px`;
+            cardContainer.style.top = `${(event.start.getTime() - date.getTime()) / (1000 * 60) + 60}px`;
             // end - start / minutes + 60px (offset for header)
 
             // console.log((event.end.getTime() - event.start.getTime()) / (1000 * 60));
@@ -91,9 +91,9 @@ class CalendarDay extends CalendarElement {
         update();
 
 
-        this.el.appendChild(container);
+        // this.el.appendChild(container);
 
-        return this.el;
+        return container;
     }
 
     private renderDay() {

@@ -8,6 +8,10 @@ const { getClientIp } = require('request-ip');
 const { Session } = require('./server-functions/structure/sessions');
 const builder = require('./server-functions/page-builder');
 const { detectSpam, emailValidation } = require('./server-functions/middleware/spam-detection');
+const { getTemplateSync, getTemplate, log } = require('./server-functions/files');
+const { ServerError } = require('./server-functions/structure/error');
+const { getCalendars, getEvents } = require('./server-functions/google/google');
+const { DB } = require('./server-functions/databases');
 
 require('dotenv').config();
 const { PORT, DOMAIN } = process.env;
@@ -93,6 +97,7 @@ function stripHtml(body) {
 
 // logs body of post request
 app.post('/*', (req, res, next) => {
+    console.log(req.body);
     req.body = stripHtml(req.body);
     next();
 });
@@ -165,59 +170,151 @@ app.post(emailValidation(['email', 'confirmEmail'], {
 // app.use(builder);
 
 
+app.post('/get-calendars', async (req, res) => {
+    const { email } = req.body;
+    req.session.email = email; // apply the amil to the session
+
+    const calendar = await getCalendars(email);
+
+    if (!calendar) {
+        return new ServerError({
+            status: 404,
+            message: 'Calendar not found',
+            description: 'The calendar you are looking for does not exist'
+        }, req, res).send();
+    }
+
+    res.json(calendar);
+});
+
+app.post('/get-events', async (req, res) => {
+    let { calendarId, from, to } = req.body;
+
+    from = new Date(from);
+    to = new Date(to);
+
+    const { events, email } = await getEvents(calendarId, from, to);
+    if (req.session.email !== email) {
+        return new ServerError(req, {
+            status: 401,
+            message: 'Email mismatch',
+            description: 'The email you are using does not match the email associated with this calendar'
+        }, req, res).send();
+    }
+
+    res.json(events);
+});
+
+app.get('/calendar', async (req, res) => {
+    const { calendarId } = req.query;
+    const query = `
+        SELECT *
+        FROM Calendars
+        WHERE id = ?
+    `;
+
+    const calendar = await DB.get(query, [calendarId]);
+
+    if (!calendar) {
+        return new ServerError(req, {
+            status: 404,
+            message: 'Calendar not found',
+            description: 'The calendar you are looking for does not exist'
+        }, req, res).send();
+    }
+
+    if (req.session.email !== calendar.email) {
+        return new ServerError(req, {
+            status: 401,
+            message: 'Email mismatch',
+            description: 'The email you are using does not match the email associated with this calendar'
+        }, req, res).send();
+    }
 
 
 
+    if (!calendar.confirmed) return res.redirect('/calendar-error?calendarId=' + calendarId);
+
+    const html = await getTemplate('ui-order/2-calendar', { alias: calendar?.alias });
+    res.send(html);
+});
+
+app.post('/confirm-calendar', async (req, res) => {
+    const { calendarId } = req.body;
+    const selectQuery = `
+        SELECT *
+        FROM Calendars
+        WHERE id = ?
+    `;
+
+    const calendar = await DB.get(selectQuery, [calendarId]);
+
+    if (!calendar) {
+        return new ServerError({
+            status: 404,
+            message: 'Calendar not found',
+            description: 'The calendar you are looking for does not exist'
+        }, req, res).send();
+    }
 
 
 
+    if (req.session.email !== calendar.email) {
+        return new ServerError({
+            status: 401,
+            message: 'Email mismatch',
+            description: 'The email you are using does not match the email used to create this calendar'
+        }, req, res).send();
+    }
+
+    const updateQuery = `
+        UPDATE Calendars
+        SET confirmed = 1
+        WHERE id = ?
+    `;
+
+    await DB.run(updateQuery, [calendarId]);
+
+    res.redirect('/calendar?calendarId=' + calendarId);
+});
+
+app.get('/calendar-error', async (req, res) => {
+    const { calendarId } = req.query;
+
+    const query = `
+        SELECT *
+        FROM Calendars
+        WHERE id = ?
+    `;
+
+    const calendar = await DB.get(query, [calendarId]);
+    if (!calendar) {
+        return new ServerError(req, { 
+            status: 404,
+            message: 'Calendar not found',
+            description: 'The calendar you are looking for does not exist on our servers'
+        }, req, res).send();
+    }
 
 
+    if (req.session.email !== calendar.email) {
+        return new ServerError(req, { 
+            status: 401, 
+            message: 'Email mismatch',
+            description: 'Your session email does not match the email associated with this calendar'
+        }, req, res).send();
+    }
+
+    if (!calendar.confirmed) return res.send(await getTemplate('ui-order/3-calendar-error', calendar));
+
+    // this could cause a redirect loop, but it shouldn't
+    res.redirect('/calendar?calendarId=' + calendarId);
+});
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+app.get('/', (req, res, next) => {
+    res.send(getTemplateSync('ui-order/1-list-calendars'));
+});
 
 
 
@@ -267,22 +364,8 @@ app.use((req, res, next) => {
 
     logCache.push(csvObj);
 
-    new ObjectsToCsv([csvObj]).toDisk('./logs.csv', { append: true });
+    log('requests', csvObj);
 });
-
-
-
-const clearLogs = () => {
-    fs.writeFileSync('./logs.csv', '');
-    logCache = [];
-}
-
-const timeTo12AM = 1000 * 60 * 60 * 24 - Date.now() % (1000 * 60 * 60 * 24);
-console.log('Clearing logs in', timeTo12AM / 1000 / 60, 'minutes');
-setTimeout(() => {
-    clearLogs();
-    setInterval(clearLogs, 1000 * 60 * 60 * 24);
-}, timeTo12AM);
 
 
 server.listen(PORT, () => {

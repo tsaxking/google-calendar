@@ -1,6 +1,6 @@
 :root {
     /* 270px with dashboard, 0 just as regular */
-    --offCanvas-width: 270px;
+    --offCanvas-width: 0px;
     /* default to 54px */
     --topNavbarHeight: 54px;
 }

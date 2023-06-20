@@ -19,13 +19,17 @@ type Socket = {
 
 export class Session {
     static middleware(req: CustomRequest, res: Response, next: NextFunction) {
-        if (!req.session) {
-            req.session = new Session(req, res);
-            Session.addSession(req.session);
+        const cookie = parseCookie(req.headers.cookie || '') as { ssid: string };
+        const { ssid } = cookie || {};
+        let session: Session = Session.sessions[ssid];
+        if (!session) {
+            session = new Session(req, res);
+            Session.addSession(session);
         }
+        req.session = session;
         next();
     }
-
+    
     static _sessions: { [key: string]: Session } = {};
     static get sessions() {
         return Session._sessions;

@@ -37,16 +37,19 @@ const getEventInTime = (timeSlot: number, date: Date) => (e: CalendarEvent) => {
 
 
 class Calendar extends CalendarElement {
-    id: string;
+    alias: string;
+    container: HTMLDivElement;
 
     #from?: Date;
     #to?: Date;
 
     eventCache: CalendarEvent[] = [];
 
-    constructor(id: string) {
+    constructor(container: HTMLDivElement) {
         super();
-        this.id = id;
+        this.alias = container.dataset.alias as string;
+        this.container = container;
+        this.render(container.dataset.view as CalendarView);
     }
 
     get from() {
@@ -76,7 +79,7 @@ class Calendar extends CalendarElement {
                 'Content-Type': 'application/json'
             },
             body: JSON.stringify({
-                calendarId: this.id,
+                alias: this.alias,
                 from: this.from?.getTime(),
                 to: this.to?.getTime()
             })
@@ -88,7 +91,7 @@ class Calendar extends CalendarElement {
     }
 
     async render(view: CalendarView, date: Date = new Date()) {
-        console.log('rendering:', view);
+        // console.log('rendering:', view);
         this.el.innerHTML = '';
 
         this.from = new Date(date);

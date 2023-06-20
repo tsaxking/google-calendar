@@ -39,6 +39,8 @@ class CalendarWeek extends CalendarElement {
 
     private renderWeek() {
         this.el = document.createElement('div');
+        this.el.classList.add('position-relative');
+
         const today = new Date();
 
         const table = document.createElement('table');

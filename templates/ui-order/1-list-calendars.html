@@ -1,0 +1,160 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <title>Get Your Calendar</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <main>
+        <div class="container" id="container">
+            <div class="row mb-3">
+                <h1>Get Your Calendar</h1>
+                <small>
+                    This is a simple app that will allow you to view your Google Calendar events. It will not allow you to edit or delete events.
+                </small>
+            </div>
+
+            <div class="row mb-3">
+                <h2>Instructions</h2>
+                <ol>
+                    <li>Enter your email and click submit</li>
+                    <li>Authorize this app to read your google calendars</li>
+                    <li>Click on the calendar you want to view</li>
+                    <li>View your calendar!</li>
+                </ol>
+            </div>
+
+            <div class="row mb-3" id="form-container">
+                <h5>1. Enter your Email</h5>
+                <input type="text" name="" id="cal-email" class="form-control">
+                <button class="btn btn-primary" id="cal-email-submit">Submit</button>
+            </div>
+
+            <div class="row mb-3 d-none" id="calendars">
+                <h5>2. Select your Calendar</h5>
+                <ul class="list-group" id="cal-list"></ul>
+            </div>
+
+            <div class="row mb-3 d-none" id="events">
+                <h5>Here are the events for the next month:</h5>
+                <ul class="list-group" id="event-list"></ul>
+            </div>
+
+            <div class="row mb-3 d-none" id="confirm-row">
+                <h5>3. Confirm your Calendar</h5>
+                <button class="btn btn-primary" disabled id="confirm">Confirm</button>
+            </div>
+        </div>
+
+
+
+        <script src="script.js"></script>
+        <script>
+            const button = document.getElementById('cal-email-submit');
+            const input = document.getElementById('cal-email');
+
+            button.onclick = async() => {
+                const email = input.value;
+                const calendars = await requestFromServer({
+                    method: 'POST',
+                    url: '/get-calendars',
+                    body: {
+                        email
+                    }
+                });
+                
+
+                showCalendars(calendars);
+            }
+
+            let selectedCalendar = null;
+            const showCalendars = (calendars) => {
+                if (!calendars) return CBS.alert('There was an error getting your calendars');
+                const calendarContainer = document.getElementById('calendars');
+                calendarContainer.classList.remove('d-none');
+
+                const confirmRow = document.getElementById('confirm-row');
+                confirmRow.classList.remove('d-none');
+
+                const confirmButton = document.getElementById('confirm');
+
+                const list = document.getElementById('cal-list');
+                list.innerHTML = '';
+
+                for (const cal of calendars) {
+                    const [item] = CBS.createElementFromText(
+                        `
+                            <a href="#events" class="list-group-item list-group-item-action" data-id="${cal.id}">
+                                ${cal.summary}
+                            </a>
+                        `
+                    );
+
+                    item.onclick = () => {
+                        item.classList.add('active');
+                        confirmButton.disabled = false;
+                        if (selectedCalendar) selectedCalendar.classList.remove('active');
+                        selectedCalendar = cal.id;
+                        getEvents(cal.id);
+                    }
+
+                    list.appendChild(item);
+                }
+
+
+                confirmButton.onclick = () => {
+                    fetch('/confirm-calendar', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            calendarId: selectedCalendar
+                        })
+                    })
+                    .then(res => res.json())
+                    .catch(err => {
+                        CBS.alert('There was an error confirming your calendar');
+                    });
+                }
+            }
+
+
+            const getEvents = async (calendarId) => {
+                const events = await requestFromServer({
+                    method: 'POST',
+                    url: '/get-events',
+                    body: {
+                        calendarId
+                    }
+                });
+
+                const eventContainer = document.getElementById('events');
+                eventContainer.classList.remove('d-none');
+
+                const list = document.getElementById('event-list');
+                list.innerHTML = '';
+
+                if (!events) return CBS.alert('There was an error getting your events');
+
+                for (const event of events) {
+                    if (!event || !event.summary) continue;
+                    const [item] = CBS.createElementFromText(`
+                        <a href="#" class="list-group-item list-group-item-action">
+                            ${event.summary}
+                        </a>
+                    `);
+
+                    list.appendChild(item);
+                }
+            }
+        </script>
+    </main>
+</body>
+
+</html>

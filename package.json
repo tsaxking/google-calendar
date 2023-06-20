@@ -11,7 +11,7 @@
     "update": "npm i && node ./build/server-update.js",
     "test-env": "node ./test-env/test.js",
     "debug": "node ./test-env/debugger.js",
-    "light": "node server.js prod"
+    "lite": "node server.js prod"
   },
   "repository": {
     "type": "git",
@@ -26,6 +26,8 @@
   "homepage": "https://github.com/tsaxking/template#readme",
   "dependencies": {
     "@gerhobbelt/gitignore-parser": "^0.2.0-9",
+    "@google-cloud/local-auth": "^2.1.0",
+    "@types/bootstrap": "^5.2.6",
     "autoprefixer": "^10.4.14",
     "axios": "^1.4.0",
     "callsite": "^1.0.0",
@@ -34,6 +36,7 @@
     "deep-email-validator": "^0.1.21",
     "dotenv": "^16.0.3",
     "express": "^4.18.2",
+    "googleapis": "^105.0.0",
     "node-html-constructor": "^2.1.2",
     "node-html-parser": "^6.1.5",
     "nodemailer": "^6.9.1",

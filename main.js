@@ -229,7 +229,6 @@ update.stdout.on('data', data => {
                         update.stdin.write('npm run update\n');
                         break;
                     case 'rs':
-                        build.stdin.write('rebuild');
                         server.stdin.write('rs\n');
                         break;
                     case 'git':

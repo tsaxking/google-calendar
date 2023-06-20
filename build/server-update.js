@@ -182,7 +182,8 @@ const makeFilesAndFolders = async() => {
         "/uploads",
         "/history",
         "/archive",
-        "/db"
+        "/db",
+        "/logs"
     ];
 
     const port = randomPort();
@@ -305,7 +306,28 @@ function setBackupIntervals() {
     });
 }
 
+function clearLogs() {
+    console.log('Setting up log clearing timeouts...');
 
+    const clear = (log) =>  {
+        const filepath = path.resolve(__dirname, '../logs', log + '.csv');
+        fs.writeFileSync(filepath, '');
+    }
+
+    const logs = fs.readdirSync(path.resolve(__dirname, '../logs'));
+
+    const timeTo12AM = new Date();
+    timeTo12AM.setHours(24, 0, 0, 0);
+
+    logs.forEach(log => {
+        setTimeout(() => {
+            clear(log);
+            setInterval(() => {
+                clear(log);
+            }, 1000 * 60 * 60 * 24);
+        }, timeTo12AM - Date.now());
+    });
+}
 
 
 const runFunction = async(fn) => {
@@ -333,6 +355,7 @@ const serverUpdate = async() => {
 
     await Promise.all(promises);
     await runFunction(setBackupIntervals);
+    await runFunction(clearLogs);
     return console.log('Finished all update tasks!');
 }
 

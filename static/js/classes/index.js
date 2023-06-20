@@ -77,7 +77,7 @@ class Calendar extends CalendarElement {
         return events.map((e) => new CalendarEvent(e));
     }
     async render(view, date = new Date()) {
-        console.log('rendering:', view);
+        // console.log('rendering:', view);
         this.el.innerHTML = '';
         this.from = new Date(date);
         this.from.setHours(0, 0, 0, 0);
@@ -159,9 +159,9 @@ class CalendarDay extends CalendarElement {
     }
     renderWeek() {
         this.el = document.createElement('div');
-        this.el.classList.add('position-absolute', 'h-100', 'overflow-hidden');
+        // this.el.classList.add('position-absolute', 'h-100', 'overflow-hidden');
         const container = document.createElement('div');
-        container.classList.add('position-relative', 'overflow-hidden');
+        container.classList.add('position-absolute', 'overflow-hidden');
         container.style.height = 60 * 24 + 'px'; // 60 minutes * 24 hours
         const date = new Date(this.date);
         date.setHours(0, 0, 0, 0);
@@ -172,7 +172,7 @@ class CalendarDay extends CalendarElement {
             const cardContainer = document.createElement('div');
             cardContainer.classList.add('position-absolute', 'w-100', 'p-1', 'm-0');
             // start - date / minutes + 60px (offset for header)
-            cardContainer.style.top = `${(event.start.getTime() - date.getTime()) / (1000 * 60)}px`;
+            cardContainer.style.top = `${(event.start.getTime() - date.getTime()) / (1000 * 60) + 60}px`;
             // end - start / minutes + 60px (offset for header)
             // console.log((event.end.getTime() - event.start.getTime()) / (1000 * 60));
             cardContainer.style.height = `${(event.end.getTime() - event.start.getTime()) / (1000 * 60)}px`;
@@ -203,8 +203,8 @@ class CalendarDay extends CalendarElement {
         };
         this.animate = true;
         update();
-        this.el.appendChild(container);
-        return this.el;
+        // this.el.appendChild(container);
+        return container;
     }
     renderDay() {
         const today = new Date();
@@ -427,6 +427,7 @@ class CalendarWeek extends CalendarElement {
     }
     renderWeek() {
         this.el = document.createElement('div');
+        this.el.classList.add('position-relative');
         const today = new Date();
         const table = document.createElement('table');
         table.classList.add('table', 'table-striped', 'm-0', 'p-0', 'table-bordered');

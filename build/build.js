@@ -102,51 +102,6 @@ const delimiters = {
     css: "\n"
 }
 
-const spawnChild = ({ command, args = [], onData = true, onOpen = true, onClose = false }, name) => {
-    const child = ChildProcess.spawn(command, args, {
-        stdio: 'pipe',
-        shell: true,
-        cwd: process.cwd(),
-        env: process.env
-    });
-    if (onData) {
-        child.stdout.on('data', data => {
-            try {
-                console.log(name + ':', data.toString().trim('\r'));
-            } catch {}
-        });
-    }
-    child.stderr.on('data', data => {
-        try {
-            console.log(name + ':', data.toString().trim('\r'));
-        } catch {}
-    });
-    if (onClose) {
-        child.on('exit', code => {
-            try {
-                console.log(name + ':', 'exited with code', code);
-            } catch {}
-        });
-    }
-    child.log = (...args) => {
-        console.log(name + ':', ...args);
-    }
-
-    if (onOpen) {
-        const funSpawnMessgges = [
-            'A wild child has appeared!',
-            'Summoning child...',
-            'Child has been summoned!',
-            'Child has been summoned!',
-            'Child has been born!'
-        ];
-
-        child.log(funSpawnMessgges[Math.floor(Math.random() * funSpawnMessgges.length)]);
-    }
-
-    return child;
-}
-
 const runTs = async (directory) => {
     return new Promise((res,rej) => {
         const tsConfig = readJSON(path.resolve(__dirname, directory, './tsconfig.json'));

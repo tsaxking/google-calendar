@@ -15,7 +15,6 @@ uploads/
 db/
 static/build/
 */scss/*.css
-logs.csv
 ignore-list.txt
 
 # Diagnostic reports (https://nodejs.org/api/report.html)
